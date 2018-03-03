@@ -11,7 +11,11 @@ import * as vscode from 'vscode';
  * invalid states.
  */
 export class StateManager {
-  constructor(readonly extensionContext: vscode.ExtensionContext) {}
+  constructor(readonly extensionContext: vscode.ExtensionContext) {
+    if (process.env['CMT_RESET_STATE'] == '1') {
+      this.reset();
+    }
+  }
 
   /**
    * The name of the workspace-local active kit.

@@ -285,4 +285,14 @@ export function thisExtension() {
 
 export function thisExtensionPath(): string { return thisExtension().extensionPath; }
 
-export function dropNulls<T>(items: (T|null)[]): T[] { return items.filter(item => item !== null) as T[]; }
+export function dropNulls<T>(items: (T | null)[]): T[] { return items.filter(item => item !== null) as T[]; }
+
+export function silentMode(): boolean {
+  return process.env['CMT_SILENT'] == '1';
+}
+
+export function checkNotSilent(message: string) {
+  if (silentMode()) {
+    throw new Error(`Silent check failed. We require user input: ${message}`);
+  }
+}

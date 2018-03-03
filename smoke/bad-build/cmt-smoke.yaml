@@ -1,0 +1,6 @@
+run:
+  - type: setKit
+  - type: configure
+    ok: true
+  - type: build
+    ok: false

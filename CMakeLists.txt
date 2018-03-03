@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.7)
 
 project(CMakeTools VERSION 0.11.0 LANGUAGES NONE)
 
+include(CTest)
+enable_testing()
+
 find_program(NPM_EXECUTABLE npm)
 find_program(VSCE_EXECUTABLE vsce)
 find_program(SPHINX_EXECUTABLE sphinx-build)
@@ -72,3 +75,5 @@ if(SPHINX_EXECUTABLE)
         USES_TERMINAL
         )
 endif()
+
+add_subdirectory(smoke)

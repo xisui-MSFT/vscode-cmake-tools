@@ -571,20 +571,23 @@ export abstract class CMakeDriver implements vscode.Disposable {
   private async _beforeConfigure(): Promise<boolean> {
     log.debug('Runnnig pre-configure checks and steps');
     if (this._isBusy) {
-      log.debug('No configuring: We\'re busy.');
+      log.debug('Not configuring: We\'re busy.');
       vscode.window.showErrorMessage('A CMake task is already running. Stop it before trying to configure.');
       return false;
     }
 
     if (!this.sourceDir) {
-      log.debug('No configuring: There is no source directory.');
+      log.debug('Not configuring: There is no source directory.');
       vscode.window.showErrorMessage('You do not have a source directory open');
       return false;
     }
 
     const cmake_list = this.mainListFile;
     if (!await fs.exists(cmake_list)) {
-      log.debug('No configuring: There is no', cmake_list);
+      log.debug('Not configuring: There is no', cmake_list);
+      if (util.silentMode()) {
+        return false;
+      }
       const do_quickstart
           = await vscode.window.showErrorMessage('You do not have a CMakeLists.txt', 'Quickstart a new CMake project');
       if (do_quickstart)
@@ -598,6 +601,9 @@ export abstract class CMakeDriver implements vscode.Disposable {
       const save_good = await vscode.workspace.saveAll();
       if (!save_good) {
         log.debug('Saving open files failed');
+        if (util.silentMode()) {
+          return false;
+        }
         const chosen = await vscode.window.showErrorMessage<
             vscode.MessageItem>('Not all open documents were saved. Would you like to continue anyway?',
                                 {

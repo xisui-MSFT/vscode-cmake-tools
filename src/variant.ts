@@ -290,6 +290,7 @@ export class VariantManager implements vscode.Disposable {
                         keywordSettings : this.transformChoiceCombinationToKeywordSettings(optionset),
                         description : optionset.map(o => o.settings.long).join(' + '),
                       }));
+    util.checkNotSilent('Need a variant selection');
     const chosen = await vscode.window.showQuickPick(items);
     if (!chosen) {
       return false;

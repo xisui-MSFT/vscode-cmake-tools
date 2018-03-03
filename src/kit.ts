@@ -10,6 +10,7 @@ import dirs from './dirs';
 import * as logging from './logging';
 import {fs} from './pr';
 import * as proc from './proc';
+import * as util from './util';
 import {loadSchema} from "./schema";
 import {StateManager} from './state';
 import {dropNulls, thisExtensionPath} from "./util";
@@ -628,6 +629,7 @@ export class KitManager implements vscode.Disposable {
         kit : kit,
       };
     });
+    util.checkNotSilent('No kit is selected');
     const chosen = await vscode.window.showQuickPick(items, {
       placeHolder : 'Select a Kit',
     });
@@ -778,16 +780,18 @@ export class KitManager implements vscode.Disposable {
       interface DoOpen extends vscode.MessageItem {
         doOpen: boolean;
       }
-      const item = await vscode.window.showInformationMessage<DoOpen>(
-          'CMake Tools has scanned for available kits and saved them to a file. Would you like to edit the Kits file?',
-          {},
-          {title : "Yes", doOpen : true},
-          {title : "No", isCloseAffordance : true, doOpen : false});
-      if (item === undefined) {
-        return;
-      }
-      if (item.doOpen) {
-        this.openKitsEditor();
+      if (!util.silentMode()) {
+        const item = await vscode.window.showInformationMessage<DoOpen>(
+            'CMake Tools has scanned for available kits and saved them to a file. Would you like to edit the Kits file?',
+            {},
+            {title : "Yes", doOpen : true},
+            {title : "No", isCloseAffordance : true, doOpen : false});
+        if (item === undefined) {
+          return;
+        }
+        if (item.doOpen) {
+          this.openKitsEditor();
+        }
       }
     }
   }

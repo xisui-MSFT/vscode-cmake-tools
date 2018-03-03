@@ -918,6 +918,21 @@ export class CMakeTools implements vscode.Disposable, api.CMakeToolsAPI {
   }
 
   async selectEnvironments() { return null; }
+
+  /**
+   * Private interfaces, only for testing
+   */
+  async privSetKit(name?: string) {
+    const kits = this._kitManager.kits;
+    if (kits.length == 0) {
+      throw new Error('No kits for test run');
+    }
+    const chosenKit
+        = name ? await this._kitManager.selectKitByName(name) : await this._kitManager.selectKitByName(kits[0].name);
+    if (!chosenKit) {
+      throw new Error('Failed to choose kit from given name "${name}"');
+    }
+  }
 }
 
 export default CMakeTools;
