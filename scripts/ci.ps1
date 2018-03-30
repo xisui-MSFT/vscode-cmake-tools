@@ -55,12 +55,14 @@ Invoke-ChronicCommand "npm install" $npm install
 # Now do the real compile
 Invoke-ChronicCommand "Compiling TypeScript" $npm run compile-once
 
+# We can create a package now that we've compiled everything
+Invoke-ChronicCommand "Generating VSIX package" $npm run vsce package
+
 if ($do_upload) {
     # Since we've succesfully compiled, we'll now upload a package, even though we have more testing to do
     $vsix_filename = "$($package_def.name)-$($package_def.version).vsix"
     $vsix_item = Get-ChildItem (Join-Path $REPO_DIR $vsix_filename)
 
-    Invoke-ChronicCommand "Generating VSIX package" $npm run vsce package
     Write-Host "Uploading file $vsix_item to transfer.sh..."
     $file_link = (Invoke-WebRequest -InFile $vsix_item -Uri https://transfer.sh/$vsix_filename -Method Put).Content.Trim()
     Write-Host "Uploaded generated package: $file_link"
