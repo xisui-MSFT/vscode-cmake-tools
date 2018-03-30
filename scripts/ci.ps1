@@ -12,7 +12,17 @@ param(
 )
 $ErrorActionPreference = "Stop"
 
-$CMakeToolsVersion = "0.11.0"
+$package_def = Get-Content package.json | ConvertFrom-Json
+
+$CMakeToolsVersion = $package_def.version
+
+$branch = ([string](& git rev-parse --abbrev-ref HEAD)).Trim()
+$upload_branches = @("develop", "feature/refactor-1.0", "master")
+$do_upload = $false
+if (($branch -in $upload_branches) -and ($env:TRAVIS_OS_NAME -eq "linux")) {
+    Write-Host "A successful build result will be uploaded to transfer.sh"
+    $do_upload = $true
+}
 
 # Import the utility modules
 Import-Module (Join-Path $PSScriptRoot "cmt.psm1")
@@ -44,6 +54,17 @@ Invoke-ChronicCommand "npm install" $npm install
 
 # Now do the real compile
 Invoke-ChronicCommand "Compiling TypeScript" $npm run compile-once
+
+if ($do_upload) {
+    # Since we've succesfully compiled, we'll now upload a package, even though we have more testing to do
+    $vsix_filename = "$($package_def.name)-$($package_def.version).vsix"
+    $vsix_item = Get-ChildItem (Join-Path $REPO_DIR $vsix_filename)
+
+    Invoke-ChronicCommand "Generating VSIX package" $npm run vsce package
+    Write-Host "Uploading file $vsix_item to transfer.sh..."
+    $file_link = (Invoke-WebRequest -InFile $vsix_item -Uri https://transfer.sh/$vsix_filename -Method Put).Content.Trim()
+    Write-Host "Uploaded generated package: $file_link"
+}
 
 # Run TSLint to check for silly mistakes
 Invoke-ChronicCommand "Running TSLint" $npm run lint:nofix
@@ -102,11 +123,7 @@ if ($DocDestination) {
     Copy-Item $doc_build -Destination $DocDestination -Recurse
 }
 
-$package_def = Get-Content package.json | ConvertFrom-Json
-$vsix_filename = "$($package_def.name)-$($package_def.version).vsix"
-$vsix_item = Get-ChildItem (Join-Path $REPO_DIR $vsix_filename)
-
-Invoke-ChronicCommand "Generating VSIX package" $npm run vsce package
-Write-Host "Uploading file $vsix_item to transfer.sh..."
-$file_link = (Invoke-WebRequest -InFile $vsix_item -Uri https://transfer.sh/$vsix_filename -Method Put -Verbose).Body
-Write-Host "Uploaded generated package: $file_link"
+if ($do_upload) {
+    # Repeat the link again for visibility in the logs
+    Write-Host "Uploaded generated .vsix file to $file_link"
+}
