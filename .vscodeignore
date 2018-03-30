@@ -15,3 +15,5 @@ cSpell.json
 CMakeLists.txt
 tslint.json
 .gitattributes
+images/**
+scripts/**

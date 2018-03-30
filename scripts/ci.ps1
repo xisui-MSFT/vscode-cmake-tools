@@ -102,4 +102,11 @@ if ($DocDestination) {
     Copy-Item $doc_build -Destination $DocDestination -Recurse
 }
 
+$package_def = Get-Content package.json | ConvertFrom-Json
+$vsix_filename = "$($package_def.name)-$($package_def.version).vsix"
+$vsix_item = Get-ChildItem (Join-Path $REPO_DIR $vsix_filename)
+
 Invoke-ChronicCommand "Generating VSIX package" $npm run vsce package
+Write-Host "Uploading file $vsix_item to transfer.sh..."
+$file_link = (Invoke-WebRequest -InFile $vsix_item -Uri https://transfer.sh/$vsix_filename -Method Put -Verbose).Body
+Write-Host "Uploaded generated package: $file_link"
