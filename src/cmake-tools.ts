@@ -774,6 +774,9 @@ export class CMakeTools implements vscode.Disposable, api.CMakeToolsAPI {
       throw new Error(localize('cannot.configure.no.kit', 'Cannot configure: No kit is active for this CMake Tools'));
     }
     if (!this._variantManager.haveVariant) {
+      if (process.env['CMT_TESTING'] === '1') {
+        throw new Error('Selecting variants during test?');
+      }
       progress.report({message: localize('waiting.on.variant', 'Waiting on variant selection')});
       await this._variantManager.selectVariant();
       if (!this._variantManager.haveVariant) {
