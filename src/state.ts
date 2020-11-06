@@ -60,6 +60,7 @@ export class StateManager {
    * The keyword settings for the build variant
    */
   get activeVariantSettings(): Map<string, string>|null {
+    console.trace('Getting active variant.');
     const pairs = this._get<[string, string][]>('activeVariantSettings');
     if (pairs) {
       return new Map<string, string>(pairs);
@@ -68,6 +69,7 @@ export class StateManager {
     }
   }
   set activeVariantSettings(settings: Map<string, string>|null) {
+    console.trace('Setting active variant: ' + JSON.stringify(settings));
     if (settings) {
       const pairs: [string, string][] = Array.from(settings.entries());
       this._update('activeVariantSettings', pairs);
