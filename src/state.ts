@@ -11,7 +11,10 @@ import * as vscode from 'vscode';
  * invalid states.
  */
 export class StateManager {
-  constructor(readonly extensionContext: vscode.ExtensionContext, readonly folder: vscode.WorkspaceFolder) {}
+  constructor(readonly extensionContext: vscode.ExtensionContext, readonly folder: vscode.WorkspaceFolder) {
+    const pairs = extensionContext.globalState.get(folder.uri.fsPath + 'activeVariantSettings');
+    console.trace(`Initializing StateManager: '${folder.uri.fsPath}', variant: '${JSON.stringify(pairs)}'`);
+  }
 
   private _get<T>(key: string): T | undefined {
     return this.extensionContext.globalState.get<T>(this.folder.uri.fsPath + key);
@@ -69,11 +72,12 @@ export class StateManager {
     }
   }
   set activeVariantSettings(settings: Map<string, string>|null) {
-    console.trace(`Setting active variant '${JSON.stringify(settings)}' for folder '${this.folder.uri.fsPath}'.`);
     if (settings) {
       const pairs: [string, string][] = Array.from(settings.entries());
+      console.trace(`Setting active variant '${JSON.stringify(pairs)}' for folder '${this.folder.uri.fsPath}'.`);
       this._update('activeVariantSettings', pairs);
     } else {
+      console.trace(`Setting active variant 'null' for folder '${this.folder.uri.fsPath}'.`);
       this._update('activeVariantSettings', null);
     }
   }
